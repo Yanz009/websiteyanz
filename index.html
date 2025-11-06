@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Yanz Edit Foto Sederhana</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #upload {
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+            height: auto;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 150px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aplikasi Edit Foto</h1>
+    <input type="file" id="upload" accept="image/*">
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+        <div class="control-group">
+            <label for="brightness">Kecerahan</label>
+            <input type="range" id="brightness" min="0" max="200" value="100">
+        </div>
+        <div class="control-group">
+            <label for="contrast">Kontras</label>
+            <input type="range" id="contrast" min="0" max="200" value="100">
+        </div>
+        <div class="control-group">
+            <label for="saturation">Saturasi</label>
+            <input type="range" id="saturation" min="0" max="200" value="100">
+        </div>
+        <div class="control-group">
+            <label for="hue">Hue</label>
+            <input type="range" id="hue" min="0" max="360" value="0">
+        </div>
+        <div class="control-group">
+            <label for="blur">Blur</label>
+            <input type="range" id="blur" min="0" max="10" value="0">
+        </div>
+        <button id="reset">Reset</button>
+        <button id="download">Download</button>
+    </div>
+
+    <script>
+        const upload = document.getElementById('upload');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const brightness = document.getElementById('brightness');
+        const contrast = document.getElementById('contrast');
+        const saturation = document.getElementById('saturation');
+        const hue = document.getElementById('hue');
+        const blur = document.getElementById('blur');
+        const resetBtn = document.getElementById('reset');
+        const downloadBtn = document.getElementById('download');
+
+        let originalImage = null;
+
+        // Fungsi untuk menggambar gambar asli
+        function drawImage() {
+            if (originalImage) {
+                canvas.width = originalImage.width;
+                canvas.height = originalImage.height;
+                ctx.drawImage(originalImage, 0, 0);
+                applyFilters();
+            }
+        }
+
+        // Fungsi untuk menerapkan filter
+        function applyFilters() {
+            if (!originalImage) return;
+            ctx.filter = `brightness(${brightness.value}%) contrast(${contrast.value}%) saturate(${saturation.value}%) hue-rotate(${hue.value}deg) blur(${blur.value}px)`;
+            ctx.drawImage(originalImage, 0, 0);
+        }
+
+        // Event listener untuk upload gambar
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        originalImage = img;
+                        drawImage();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Event listener untuk slider
+        [brightness, contrast, saturation, hue, blur].forEach(input => {
+            input.addEventListener('input', applyFilters);
+        });
+
+        // Reset ke gambar asli
+        resetBtn.addEventListener('click', () => {
+            brightness.value = 100;
+            contrast.value = 100;
+            saturation.value = 100;
+            hue.value = 0;
+            blur.value = 0;
+            drawImage();
+        });
+
+        // Download gambar yang diedit
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'edited-image.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+  </html>
